@@ -1,20 +1,61 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{ title }}!
-  </h1>
-  <img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-</div>
-<h2>Here are some links to help you start: </h2>
-<ul>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/cli">CLI Documentation</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-  </li>
-</ul>
+<!--<form (ngSubmit)="start()"
+      [formGroup]="optionsForm">
+  <div class="options">
 
+    <div class="option">
+      <h3 class="option__header">Który symbol wybierasz?</h3>
+      <mat-radio-group formControlName="humanSymbol">
+        <mat-radio-button class="option__radio-button"
+                          [value]="playerSymbol.O">
+          O
+        </mat-radio-button>
+
+        <mat-radio-button class="option__radio-button"
+                          [value]="playerSymbol.X">
+          X
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <div class="option">
+      <h3 class="option__header">Kto zaczyna?</h3>
+      <mat-radio-group formControlName="firstPlayer">
+        <mat-radio-button class="option__radio-button"
+                          [value]="player.Computer">
+          <mat-icon>computer</mat-icon>
+          Komputer
+        </mat-radio-button>
+
+        <mat-radio-button class="option__radio-button"
+                          [value]="player.Human">
+          <mat-icon>person</mat-icon>
+          Użytkownik
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <button mat-raised-button
+            color="primary"
+            class="start-button"
+            type="submit"
+            [disabled]="gameStarted">
+      Start
+    </button>
+  </div>
+</form>-->
+
+<div class="game-board">
+  <button class="game-field"
+          *ngFor="let move of (gameBoard$ | async).moves; trackBy: trackByKeyValue; let i = index"
+          (click)="onMove(i)"
+          matRipple>
+    {{ displayFn(move) }}
+  </button>
+</div>
+<!--
+
+<div class="info">
+  <h3 class="info__header" *ngIf="(turn$ | async) === player.Computer">Czekaj na ruch komputera.</h3>
+  <h3 class="info__header" *ngIf="(turn$ | async) === player.Human">Twój ruch!</h3>
+</div>
+-->

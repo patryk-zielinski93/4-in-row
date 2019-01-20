@@ -1,0 +1,92 @@
+$boardBorderColor: #2c3e50;
+$boardBackgroundColor: #ecf0f1;
+$winnerFieldBackgroundColor: #1abc9c;
+$loseFieldBackgroundColor: #e74c3c;
+$tieFieldBackgroundColor: #bdc3c7;
+$symbolsColor: #2c3e50;
+
+.game-board {
+  display: flex;
+  width: 500px;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin: 60px auto;
+  background: $boardBackgroundColor;
+  border: 1px $boardBorderColor solid;
+
+  &.win {
+    .game-field.winner-field {
+      background: $winnerFieldBackgroundColor;
+    }
+  }
+
+  &.lose {
+    .game-field.winner-field {
+      background: $loseFieldBackgroundColor;
+    }
+  }
+
+  &.tie {
+    .game-field {
+      background: $tieFieldBackgroundColor;
+    }
+  }
+}
+
+.game-field {
+  display: flex;
+  position: relative;
+  width: 20%;
+  height: 100px;
+  background: $boardBackgroundColor;
+  border: 1px $boardBorderColor solid;
+  justify-content: center;
+  align-items: center;
+  font-size: 50px;
+  color: $symbolsColor;
+}
+
+.options {
+  display: flex;
+  width: 600px;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+.option {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.option__header {
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.option__radio-button {
+  margin-right: 40px;
+
+  mat-icon {
+    margin-right: 10px;
+  }
+
+  &::ng-deep {
+    .mat-radio-label-content {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
+.info {
+  display: flex;
+  width: 600px;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+.info__header {
+  font-size: 20px;
+}
