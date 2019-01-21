@@ -3,6 +3,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { GameBoard } from '../classes/game-board';
 import { Player } from '../enum/player.enum';
 import { GameOver } from '../interfaces/game-over.interface';
+import { MoveService } from './move.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,9 @@ export class GameService {
   human = Player.O;
   whoStarts = Player.X;
   private gameBoard: GameBoard;
+
+  constructor(private moveService: MoveService) {
+  }
 
   move(player: Player, position: number): void {
     if (this.gameOver) {
@@ -33,6 +37,11 @@ export class GameService {
 
     if (gb.checkTie()) {
       this.gameOver$.next({winningPositions: null, winner: null});
+      return;
+    }
+
+    if (gb.currentPlayer === this.computer) {
+      this.move(this.computer, this.moveService.findBestMove(gb, this.computer));
     }
   }
 
@@ -41,6 +50,10 @@ export class GameService {
     const gb = new GameBoard();
     gb.currentPlayer = this.whoStarts;
     this.update(gb);
+
+    if (gb.currentPlayer === this.computer) {
+      this.move(this.computer, this.moveService.findBestMove(gb, this.computer));
+    }
   }
 
   private update(gameBoard: GameBoard): void {

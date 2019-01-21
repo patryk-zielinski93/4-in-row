@@ -13,7 +13,7 @@ export class MoveService {
   private nodesExplored = 0;
   private player: Player;
   private startTime: number;
-  private timeCutoff = 5000;
+  private timeCutoff = 10000;
   private timeout = false;
 
   findBestMove(gb: GameBoard, player: Player): number {
@@ -37,8 +37,8 @@ export class MoveService {
         moveChoices.push(i);
       }
     }
-
-    return possibleMoves[moveChoices[Math.floor(Math.random() * moveChoices.length - 1)]].lastMove.position;
+console.log(moveChoices, Math.floor(Math.random() * moveChoices.length));
+    return possibleMoves[moveChoices[Math.floor(Math.random() * moveChoices.length)]].lastMove.position;
   }
 
   private calculateValue(gb: GameBoard, depth: number): number {
