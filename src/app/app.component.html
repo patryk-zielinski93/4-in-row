@@ -44,11 +44,14 @@
   </div>
 </form>-->
 
-<div class="game-board">
+<div class="game-board"
+     [ngClass]="{'win': isWinner(), 'lose': isLooser(), 'tie': isTie()}">
   <button class="game-field"
-          *ngFor="let move of (gameBoard$ | async).board; trackBy: trackByIndex; let i = index"
+          *ngFor="let move of (gameBoard$ | async)?.board; trackBy: trackByIndex; let i = index"
+          [ngClass]="{'winner-field': isWinnerField(i)}"
           (click)="onMove(i)"
-          matRipple>
+          matRipple
+          [disabled]="!!gameOver || move !== ''">
     {{ move }}
   </button>
 </div>

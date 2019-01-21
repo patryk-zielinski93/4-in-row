@@ -1,9 +1,11 @@
 import { appConfig } from '../app.config';
 import { Player } from '../enum/player.enum';
 import { Move } from '../interfaces/move.interface';
+import { PositionWithCount } from '../interfaces/position-with-count.interface';
 
 export class GameBoard {
   board: string[] = [];
+  currentPlayer: Player;
   lastMove: Move;
 
   constructor(gameBoard?: GameBoard) {
@@ -15,6 +17,7 @@ export class GameBoard {
       }
     } else {
       this.board = gameBoard.board.slice(0);
+      this.currentPlayer = gameBoard.currentPlayer;
       this.lastMove = {...gameBoard.lastMove};
     }
   }
@@ -36,8 +39,8 @@ export class GameBoard {
     return this.board.every(m => m !== '');
   }
 
-  checkWin(player: Player): boolean {
-    let count: number[];
+  checkWin(player: Player): number[] | null {
+    let count: PositionWithCount[];
 
     // check horizontals
     for (let i = 0; i < appConfig.height; i++) {
@@ -45,12 +48,12 @@ export class GameBoard {
       for (let j = 0; j < appConfig.width; j++) {
         const position = this.getPositionForMove(j, i);
         if (this.board[position] === player) {
-          count.push(j);
+          count.push({position, count: j});
         }
       }
 
-      if (count.length >= appConfig.wins && this.isConsecutiveArray(count)) {
-        return true;
+      if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+        return this.positionWithCountToPosition(count);
       }
     }
 
@@ -58,13 +61,14 @@ export class GameBoard {
     for (let i = 0; i < appConfig.width; i++) {
       count = [];
       for (let j = 0; j < appConfig.height; j++) {
-        if (this.board[this.getPositionForMove(i, j)] === player) {
-          count.push(j);
+        const position = this.getPositionForMove(i, j);
+        if (this.board[position] === player) {
+          count.push({position, count: j});
         }
       }
 
-      if (count.length >= appConfig.wins && this.isConsecutiveArray(count)) {
-        return true;
+      if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+        return this.positionWithCountToPosition(count);
       }
     }
 
@@ -73,41 +77,44 @@ export class GameBoard {
 
     // major diagonal
     for (let i = 0; i < appConfig.height; i++) {
-      if (this.board[this.getPositionForMove(i, i)] === player) {
-        count.push(i);
+      const position = this.getPositionForMove(i, i);
+      if (this.board[position] === player) {
+        count.push({position, count: i});
       }
     }
 
-    if (count.length >= appConfig.wins && this.isConsecutiveArray(count)) {
-      return true;
+    if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+      return this.positionWithCountToPosition(count);
     }
 
     // minor diagonal
     const diff = appConfig.height - appConfig.wins;
 
-    let diag1: number[];
-    let diag2: number[];
+    let diag1: PositionWithCount[];
+    let diag2: PositionWithCount[];
 
     for (let i = 1; i <= diff; i++) {
       diag1 = [];
       diag2 = [];
       for (let j = 0; j < appConfig.width - i; j++) {
-        if (this.board[this.getPositionForMove(j, j + 1)] === player) {
-          diag1.push(j);
+        const position1 = this.getPositionForMove(j, j + 1);
+        if (this.board[position1] === player) {
+          diag1.push({position: position1, count: j});
         }
 
-        if (this.board[this.getPositionForMove(j + 1, j)] === player) {
-          diag2.push(j);
+        const position2 = this.getPositionForMove(j + 1, j);
+        if (this.board[position2] === player) {
+          diag2.push({position: position2, count: j});
         }
       }
     }
 
-    if (diag1.length >= appConfig.wins && this.isConsecutiveArray(diag1)) {
-      return true;
+    if (diag1.length >= appConfig.wins && this.isConsecutive(diag1)) {
+      return this.positionWithCountToPosition(diag1);
     }
 
-    if (diag2.length >= appConfig.wins && this.isConsecutiveArray(diag2)) {
-      return true;
+    if (diag2.length >= appConfig.wins && this.isConsecutive(diag2)) {
+      return this.positionWithCountToPosition(diag2);
     }
 
     // minor diagonal
@@ -115,33 +122,40 @@ export class GameBoard {
       diag1 = [];
       diag2 = [];
       for (let j = 0; j < appConfig.width - i; j++) {
-        if (this.board[this.getPositionForMove(j, appConfig.width - j - i - 1)] === player) {
-          diag1.push(j);
+        const pos1 = this.getPositionForMove(j, appConfig.width - j - i - 1);
+        if (this.board[pos1] === player) {
+          diag1.push({position: pos1, count: j});
         }
 
-        if (this.board[this.getPositionForMove(j + i, appConfig.width - j - 1)] === player) {
-          diag2.push(j);
+        const pos2 = this.getPositionForMove(j + i, appConfig.width - j - 1);
+        if (this.board[pos2] === player) {
+          diag2.push({position: pos2, count: j});
         }
       }
     }
 
-    if (diag1.length >= appConfig.wins && this.isConsecutiveArray(diag1)) {
-      return true;
+    if (diag1.length >= appConfig.wins && this.isConsecutive(diag1)) {
+      return this.positionWithCountToPosition(diag1);
     }
 
-    if (diag2.length >= appConfig.wins && this.isConsecutiveArray(diag2)) {
-      return true;
+    if (diag2.length >= appConfig.wins && this.isConsecutive(diag2)) {
+      return this.positionWithCountToPosition(diag2);
     }
 
     // major diagonal
     count = [];
     for (let i = 0; i < appConfig.height; i++) {
-      if (this.board[this.getPositionForMove(i, appConfig.height - i - 1)] === player) {
-        count.push(i);
+      const position = this.getPositionForMove(i, appConfig.height - i - 1);
+      if (this.board[position] === player) {
+        count.push({position, count: i});
       }
     }
 
-    return count.length >= appConfig.wins && this.isConsecutiveArray(count);
+    if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+      return this.positionWithCountToPosition(count);
+    }
+
+    return null;
   }
 
   getPossibleGameBoards(player: Player): GameBoard[] {
@@ -164,6 +178,7 @@ export class GameBoard {
 
     const gb = new GameBoard(this);
     gb.setMove(player, position);
+    gb.currentPlayer = this.currentPlayer === Player.X ? Player.O : Player.X;
 
     return gb;
   }
@@ -176,16 +191,20 @@ export class GameBoard {
     return col + row * appConfig.width;
   }
 
-  private isConsecutiveArray(arr: number[]): boolean {
+  private isConsecutive(arr: PositionWithCount[]): boolean {
     const l = arr.length - 1;
 
     for (let i = 0; i < l; i++) {
-      if (arr[i] + 1 !== arr[i + 1]) {
+      if (arr[i].count + 1 !== arr[i + 1].count) {
         return false;
       }
     }
 
     return true;
+  }
+
+  private positionWithCountToPosition(positionWithCount: PositionWithCount[]): number[] {
+    return positionWithCount.map(pwc => pwc.position);
   }
 
   private setMove(player: Player, position: number): void {

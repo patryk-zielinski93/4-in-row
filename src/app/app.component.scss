@@ -13,7 +13,7 @@ $symbolsColor: #2c3e50;
   flex-wrap: wrap;
   margin: 60px auto;
   background: $boardBackgroundColor;
-  border: 1px $boardBorderColor solid;
+  outline: 1px $boardBorderColor solid;
 
   &.win {
     .game-field.winner-field {
