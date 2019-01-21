@@ -1,4 +1,4 @@
 export enum Player {
-  X = 1,
-  O
+  X = 'X',
+  O = 'O'
 }

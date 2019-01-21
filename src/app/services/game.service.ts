@@ -12,8 +12,8 @@ export class GameService {
   human = Player.O;
   private gameBoard: GameBoard;
 
-  move(position: number): void {
-    this.update(this.gameBoard.move(this.human, position));
+  move(player: Player, position: number): void {
+    this.update(this.gameBoard.move(player, position));
   }
 
   start(): void {

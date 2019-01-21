@@ -46,10 +46,10 @@
 
 <div class="game-board">
   <button class="game-field"
-          *ngFor="let move of (gameBoard$ | async).moves; trackBy: trackByKeyValue; let i = index"
+          *ngFor="let move of (gameBoard$ | async).board; trackBy: trackByIndex; let i = index"
           (click)="onMove(i)"
           matRipple>
-    {{ displayFn(move) }}
+    {{ move }}
   </button>
 </div>
 <!--

@@ -3,18 +3,18 @@ import { Player } from '../enum/player.enum';
 import { Move } from '../interfaces/move.interface';
 
 export class GameBoard {
+  board: string[] = [];
   lastMove: Move;
-  moves: number[] = [];
 
   constructor(gameBoard?: GameBoard) {
     if (!gameBoard) {
       const size = appConfig.width * appConfig.height;
 
       for (let i = 0; i < size; i++) {
-        this.moves.push(0);
+        this.board.push('');
       }
     } else {
-      this.moves = gameBoard.moves.slice(0);
+      this.board = gameBoard.board.slice(0);
       this.lastMove = {...gameBoard.lastMove};
     }
   }
@@ -24,7 +24,7 @@ export class GameBoard {
     let total = 0;
 
     for (let i = 0; i < size; i++) {
-      if (this.moves[i] === 0) {
+      if (this.board[i] === '') {
         total++;
       }
     }
@@ -33,59 +33,115 @@ export class GameBoard {
   }
 
   checkTie(): boolean {
-    return this.moves.every(m => m !== 0);
+    return this.board.every(m => m !== '');
   }
 
   checkWin(player: Player): boolean {
-    let count: number;
+    let count: number[];
 
     // check horizontals
     for (let i = 0; i < appConfig.height; i++) {
-      count = 0;
+      count = [];
       for (let j = 0; j < appConfig.width; j++) {
-        if (this.moves[this.getPositionForMove(j, i)] === player) {
-          count++;
+        const position = this.getPositionForMove(j, i);
+        if (this.board[position] === player) {
+          count.push(j);
         }
       }
 
-      if (count >= appConfig.wins) {
+      if (count.length >= appConfig.wins && this.isConsecutiveArray(count)) {
         return true;
       }
     }
 
     // check verticals
     for (let i = 0; i < appConfig.width; i++) {
-      count = 0;
+      count = [];
       for (let j = 0; j < appConfig.height; j++) {
-        if (this.moves[this.getPositionForMove(i, j)] === player) {
-          count++;
+        if (this.board[this.getPositionForMove(i, j)] === player) {
+          count.push(j);
         }
       }
 
-      if (count >= appConfig.wins) {
+      if (count.length >= appConfig.wins && this.isConsecutiveArray(count)) {
         return true;
       }
     }
 
-    // check horizontals
-    count = 0;
+    // check diagonals
+    count = [];
+
+    // major diagonal
     for (let i = 0; i < appConfig.height; i++) {
-      if (this.moves[this.getPositionForMove(i, i)] === player) {
-        count++;
+      if (this.board[this.getPositionForMove(i, i)] === player) {
+        count.push(i);
       }
     }
-    if (count >= appConfig.wins) {
+
+    if (count.length >= appConfig.wins && this.isConsecutiveArray(count)) {
       return true;
     }
 
-    count = 0;
-    for (let i = 0; i < appConfig.height; i++) {
-      if (this.moves[this.getPositionForMove(i, appConfig.height - i - 1)] === player) {
-        count++;
+    // minor diagonal
+    const diff = appConfig.height - appConfig.wins;
+
+    let diag1: number[];
+    let diag2: number[];
+
+    for (let i = 1; i <= diff; i++) {
+      diag1 = [];
+      diag2 = [];
+      for (let j = 0; j < appConfig.width - i; j++) {
+        if (this.board[this.getPositionForMove(j, j + 1)] === player) {
+          diag1.push(j);
+        }
+
+        if (this.board[this.getPositionForMove(j + 1, j)] === player) {
+          diag2.push(j);
+        }
       }
     }
 
-    return count >= appConfig.wins;
+    if (diag1.length >= appConfig.wins && this.isConsecutiveArray(diag1)) {
+      return true;
+    }
+
+    if (diag2.length >= appConfig.wins && this.isConsecutiveArray(diag2)) {
+      return true;
+    }
+
+    // minor diagonal
+    for (let i = 1; i <= diff; i++) {
+      diag1 = [];
+      diag2 = [];
+      for (let j = 0; j < appConfig.width - i; j++) {
+        if (this.board[this.getPositionForMove(j, appConfig.width - j - i - 1)] === player) {
+          diag1.push(j);
+        }
+
+        if (this.board[this.getPositionForMove(j + i, appConfig.width - j - 1)] === player) {
+          diag2.push(j);
+        }
+      }
+    }
+
+    if (diag1.length >= appConfig.wins && this.isConsecutiveArray(diag1)) {
+      return true;
+    }
+
+    if (diag2.length >= appConfig.wins && this.isConsecutiveArray(diag2)) {
+      return true;
+    }
+
+    // major diagonal
+    count = [];
+    for (let i = 0; i < appConfig.height; i++) {
+      if (this.board[this.getPositionForMove(i, appConfig.height - i - 1)] === player) {
+        count.push(i);
+      }
+    }
+
+    return count.length >= appConfig.wins && this.isConsecutiveArray(count);
   }
 
   getPossibleGameBoards(player: Player): GameBoard[] {
@@ -113,15 +169,27 @@ export class GameBoard {
   }
 
   private checkMove(position: number): boolean {
-    return this.moves[position] === 0;
+    return this.board[position] === '';
   }
 
-  private getPositionForMove(c: number, r: number): number {
-    return c + r * appConfig.width;
+  private getPositionForMove(col: number, row: number): number {
+    return col + row * appConfig.width;
+  }
+
+  private isConsecutiveArray(arr: number[]): boolean {
+    const l = arr.length - 1;
+
+    for (let i = 0; i < l; i++) {
+      if (arr[i] + 1 !== arr[i + 1]) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private setMove(player: Player, position: number): void {
-    this.moves[position] = player;
+    this.board[position] = player;
     this.lastMove = {player, position};
   }
 }
