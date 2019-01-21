@@ -22,14 +22,122 @@ export class GameBoard {
     }
   }
 
-  checkNumPlays(player: Player, plays: number): number {
-    const size = appConfig.width * appConfig.height;
+  // Todo
+  checkNumPlays(player: Player): number {
+    let count: PositionWithCount[];
     let total = 0;
 
-    for (let i = 0; i < size; i++) {
-      if (this.board[i] === '') {
-        total++;
+    // check horizontals
+    for (let i = 0; i < appConfig.height; i++) {
+      count = [];
+      for (let j = 0; j < appConfig.width; j++) {
+        const position = this.getPositionForMove(j, i);
+        if (this.board[position] === player || this.board[position] === '') {
+          count.push({position, count: j});
+        }
       }
+
+      if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+        total += count.length;
+      }
+    }
+
+    // check verticals
+    for (let i = 0; i < appConfig.width; i++) {
+      count = [];
+      for (let j = 0; j < appConfig.height; j++) {
+        const position = this.getPositionForMove(i, j);
+        if (this.board[position] === player || this.board[position] === '') {
+          count.push({position, count: j});
+        }
+      }
+
+      if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+        total += count.length;
+      }
+    }
+
+    // check diagonals
+    count = [];
+
+    // major diagonal
+    for (let i = 0; i < appConfig.height; i++) {
+      const position = this.getPositionForMove(i, i);
+      if (this.board[position] === player || this.board[position] === '') {
+        count.push({position, count: i});
+      }
+    }
+
+    if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+      total += count.length;
+    }
+
+    // minor diagonal
+    const diff = appConfig.height - appConfig.wins;
+
+    let diag1: PositionWithCount[];
+    let diag2: PositionWithCount[];
+
+    for (let i = 1; i <= diff; i++) {
+      diag1 = [];
+      diag2 = [];
+      for (let j = 0; j < appConfig.width - i; j++) {
+        const position1 = this.getPositionForMove(j, j + 1);
+        if (this.board[position1] === player || this.board[position1] === '') {
+          diag1.push({position: position1, count: j});
+        }
+
+        const position2 = this.getPositionForMove(j + 1, j);
+        if (this.board[position2] === player || this.board[position2] === '') {
+          diag2.push({position: position2, count: j});
+        }
+      }
+    }
+
+    if (diag1.length >= appConfig.wins && this.isConsecutive(diag1)) {
+      total += count.length;
+    }
+
+    if (diag2.length >= appConfig.wins && this.isConsecutive(diag2)) {
+      total += count.length;
+    }
+
+    // minor diagonal
+    for (let i = 1; i <= diff; i++) {
+      diag1 = [];
+      diag2 = [];
+      for (let j = 0; j < appConfig.width - i; j++) {
+        const pos1 = this.getPositionForMove(j, appConfig.width - j - i - 1);
+        if (this.board[pos1] === player || this.board[pos1] === '') {
+          diag1.push({position: pos1, count: j});
+        }
+
+        const pos2 = this.getPositionForMove(j + i, appConfig.width - j - 1);
+        if (this.board[pos2] === player || this.board[pos2] === '') {
+          diag2.push({position: pos2, count: j});
+        }
+      }
+    }
+
+    if (diag1.length >= appConfig.wins && this.isConsecutive(diag1)) {
+      total += count.length;
+    }
+
+    if (diag2.length >= appConfig.wins && this.isConsecutive(diag2)) {
+      total += count.length;
+    }
+
+    // major diagonal
+    count = [];
+    for (let i = 0; i < appConfig.height; i++) {
+      const position = this.getPositionForMove(i, appConfig.height - i - 1);
+      if (this.board[position] === player || this.board[position] === '') {
+        count.push({position, count: i});
+      }
+    }
+
+    if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+      total += count.length;
     }
 
     return total;
@@ -40,6 +148,10 @@ export class GameBoard {
   }
 
   checkWin(player: Player): number[] | null {
+    if (this.board.filter(val => val === '').length < 7) {
+      return null;
+    }
+
     let count: PositionWithCount[];
 
     // check horizontals
