@@ -2,8 +2,6 @@ import { Injectable } from '@angular/core';
 import { GameBoard } from '../classes/game-board';
 import { Player } from '../enum/player.enum';
 
-const defaultValue = 10000;
-
 @Injectable({
   providedIn: 'root'
 })
@@ -15,20 +13,8 @@ export class MoveService {
   private nodesExplored = 0;
   private player: Player;
   private startTime: number;
-  private timeCutoff = 2000;
+  private timeCutoff = 10000;
   private timeout = false;
-
-  calculateValue(gb: GameBoard, depth: number, checkWinSituation = false): number {
-    if (gb.checkWin(this.player, checkWinSituation)) {
-      return defaultValue - depth;
-    }
-
-    if (gb.checkWin(this.getOpponent())) {
-      return depth - defaultValue;
-    }
-
-    return 0;
-  }
 
   findBestMove(gb: GameBoard, player: Player): number {
     this.gb = gb;
@@ -43,8 +29,8 @@ export class MoveService {
     let bestMoveValue = Number.MIN_VALUE;
 
     for (let i = 0; i < possibleMoves.length; i++) {
-      const moveValue = this.minValue(possibleMoves[i], -defaultValue, defaultValue, 0);
-      console.log(possibleMoves[i], moveValue);
+      const moveValue = this.minValue(possibleMoves[i], -1000, 1000, 0);
+
       if (moveValue > bestMoveValue) {
         moveChoices = [];
         moveChoices.push(i);
@@ -63,6 +49,19 @@ export class MoveService {
     return possibleMoves[moveChoices[Math.floor(Math.random() * moveChoices.length)]].lastMove.position;
   }
 
+  private calculateValue(gb: GameBoard, depth: number): number {
+    if (gb.checkWin(this.player, true)) {
+      return 1000 - depth;
+    }
+
+    if (gb.checkWin(this.getOpponent())) {
+      return depth - 1000;
+    }
+
+    return 0;
+  }
+
+  // Todo
   private evaluateGameBoard(gb: GameBoard): number {
     const player = gb.checkNumPlays(this.player);
     const opponent = gb.checkNumPlays(this.getOpponent());
@@ -75,7 +74,7 @@ export class MoveService {
   }
 
   private isGameOver(gb: GameBoard): boolean {
-    return gb.checkTie() || !!gb.checkWin(this.player) || !!gb.checkWin(this.getOpponent());
+    return gb.checkTie() || !!gb.checkWin(this.player, true) || !!gb.checkWin(this.getOpponent());
   }
 
   private maxValue(gb: GameBoard, a: number, b: number, currentDepth: number): number {
@@ -87,10 +86,6 @@ export class MoveService {
 
     if (this.isGameOver(gb)) {
       return this.calculateValue(gb, currentDepth);
-    }
-
-    if (gb.checkWin(this.player, true)) {
-      return defaultValue - currentDepth;
     }
 
     const time = (new Date()).getTime();
@@ -123,10 +118,6 @@ export class MoveService {
 
     if (this.isGameOver(gb)) {
       return this.calculateValue(gb, currentDepth);
-    }
-
-    if (gb.checkWin(this.getOpponent(), true)) {
-      return this.calculateValue(gb, currentDepth, true);
     }
 
     const time = (new Date()).getTime();
