@@ -10,12 +10,12 @@ import { MoveService } from './move.service';
 })
 export class GameService {
   computer = Player.X;
-  currentPlayer = Player.X;
+  currentPlayer = Player.O;
   gameBoard$ = new BehaviorSubject<GameBoard>(new GameBoard());
   gameOver = false;
   gameOver$ = new Subject<GameOver>();
   human = Player.O;
-  whoStarts = Player.X;
+  whoStarts = Player.O;
   private gameBoard: GameBoard;
 
   constructor(private moveService: MoveService) {

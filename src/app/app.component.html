@@ -1,4 +1,4 @@
-<!--<form (ngSubmit)="start()"
+<form (ngSubmit)="start()"
       [formGroup]="optionsForm">
   <div class="options">
 
@@ -6,12 +6,12 @@
       <h3 class="option__header">Który symbol wybierasz?</h3>
       <mat-radio-group formControlName="humanSymbol">
         <mat-radio-button class="option__radio-button"
-                          [value]="playerSymbol.O">
+                          [value]="player.O">
           O
         </mat-radio-button>
 
         <mat-radio-button class="option__radio-button"
-                          [value]="playerSymbol.X">
+                          [value]="player.X">
           X
         </mat-radio-button>
       </mat-radio-group>
@@ -21,13 +21,13 @@
       <h3 class="option__header">Kto zaczyna?</h3>
       <mat-radio-group formControlName="firstPlayer">
         <mat-radio-button class="option__radio-button"
-                          [value]="player.Computer">
+                          [value]="'AI'">
           <mat-icon>computer</mat-icon>
           Komputer
         </mat-radio-button>
 
         <mat-radio-button class="option__radio-button"
-                          [value]="player.Human">
+                          [value]="'H'">
           <mat-icon>person</mat-icon>
           Użytkownik
         </mat-radio-button>
@@ -42,7 +42,7 @@
       Start
     </button>
   </div>
-</form>-->
+</form>
 
 <div class="game-board"
      [ngClass]="{'win': isWinner(), 'lose': isLooser(), 'tie': isTie()}">

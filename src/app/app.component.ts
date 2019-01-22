@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatSnackBar } from '@angular/material';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -13,11 +14,14 @@ import { GameService } from './services/game.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  currentPlayer: Player;
   gameBoard$: Observable<GameBoard>;
   gameOver: GameOver | null;
-  player = Player.X;
+  gameStarted = false;
+  optionsForm: FormGroup;
+  player = Player;
 
-  constructor(private gameService: GameService, private snack: MatSnackBar) {
+  constructor(private gameService: GameService, private snack: MatSnackBar, private fb: FormBuilder) {
   }
 
   isLooser(): boolean {
@@ -42,14 +46,25 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.gameBoard$ = this.gameService.gameBoard$.pipe(tap(gb => {
-      this.player = gb.currentPlayer;
+      this.currentPlayer = gb.currentPlayer;
     }));
     this.initGameOverWatcher();
-    this.gameService.start();
+    this.initOptionsForm();
   }
 
   onMove(move: number): void {
-    this.gameService.move(this.player, move);
+    this.gameService.move(this.gameService.human, move);
+  }
+
+  start(): void {
+    const options = this.optionsForm.getRawValue();
+    this.gameService.human = options.humanSymbol;
+    this.gameService.computer = options.humanSymbol === Player.X ? Player.O : Player.X;
+    this.gameService.whoStarts = options.firstPlayer === 'AI' ? this.gameService.computer : this.gameService.human;
+    this.gameStarted = true;
+    setTimeout(() => {
+      this.gameService.start();
+    }, 200);
   }
 
   trackByIndex(index: number): number {
@@ -67,8 +82,15 @@ export class AppComponent implements OnInit {
         duration: -1
       }).onAction().subscribe(() => {
         this.gameOver = null;
-        this.gameService.start();
+        this.gameStarted = false;
       });
+    });
+  }
+
+  private initOptionsForm(): void {
+    this.optionsForm = this.fb.group({
+      firstPlayer: ['AI'],
+      humanSymbol: [Player.O]
     });
   }
 }

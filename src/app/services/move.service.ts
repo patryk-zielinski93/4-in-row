@@ -40,6 +40,10 @@ export class MoveService {
       }
     }
 
+    if (moveChoices.length === 0) {
+      moveChoices = possibleMoves.map((v, i) => i);
+    }
+
     console.log(`Depth reached: ${this.depthReached}\n` +
       `Max value pruning: ${this.maxValuePruning}\n` +
       `Min value pruning: ${this.minValuePruning}\n` +
@@ -47,13 +51,12 @@ export class MoveService {
       `Move value: ${bestMoveValue}\n` +
       `Move choices:`, moveChoices);
     const n = Math.floor(Math.random() * moveChoices.length);
-    console.log(n);
     return possibleMoves[moveChoices[n]].lastMove.position;
   }
 
   private calculateValue(gb: GameBoard, depth: number): number {
-    if (gb.checkWin(this.player, true)) {
-      return 1000 - depth - 1;
+    if (gb.checkWin(this.player)) {
+      return 1000 - depth;
     }
 
     if (gb.checkWin(this.getOpponent())) {
@@ -76,7 +79,7 @@ export class MoveService {
   }
 
   private isGameOver(gb: GameBoard): boolean {
-    return gb.checkTie() || !!gb.checkWin(this.player, true) || !!gb.checkWin(this.getOpponent());
+    return gb.checkTie() || !!gb.checkWin(this.player) || !!gb.checkWin(this.getOpponent());
   }
 
   private maxValue(gb: GameBoard, a: number, b: number, currentDepth: number): number {
