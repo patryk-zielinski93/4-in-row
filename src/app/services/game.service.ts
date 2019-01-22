@@ -49,6 +49,7 @@ export class GameService {
     this.gameOver = false;
     const gb = new GameBoard();
     gb.currentPlayer = this.whoStarts;
+    gb.firstPlayer = this.whoStarts;
     this.update(gb);
 
     if (gb.currentPlayer === this.computer) {

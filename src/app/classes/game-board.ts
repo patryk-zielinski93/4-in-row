@@ -6,6 +6,7 @@ import { PositionWithCount } from '../interfaces/position-with-count.interface';
 export class GameBoard {
   board: Array<Player | ''> = [];
   currentPlayer: Player;
+  firstPlayer: Player;
   lastMove: Move;
 
   constructor(gameBoard?: GameBoard) {
@@ -16,13 +17,13 @@ export class GameBoard {
         this.board.push('');
       }
     } else {
+      this.firstPlayer = gameBoard.firstPlayer;
       this.board = gameBoard.board.slice(0);
       this.currentPlayer = gameBoard.currentPlayer;
       this.lastMove = {...gameBoard.lastMove};
     }
   }
 
-  // Todo
   checkNumPlays(player: Player): number {
     let count: PositionWithCount[];
     let moves: PositionWithCount[];
@@ -186,10 +187,6 @@ export class GameBoard {
   }
 
   checkWin(player: Player, checkWinSituation = false): number[] | null {
-    if (this.board.filter(val => val === '').length < 7) {
-      return null;
-    }
-
     let count: PositionWithCount[];
     let moves: PositionWithCount[];
 
@@ -243,6 +240,7 @@ export class GameBoard {
 
     // check diagonals
     count = [];
+    moves = [];
 
     // major diagonal
     for (let i = 0; i < appConfig.height; i++) {
@@ -250,9 +248,16 @@ export class GameBoard {
       if (this.board[position] === player) {
         count.push({position, count: i, value: this.board[position]});
       }
+      if (this.board[position] === player || this.board[position] === '') {
+        moves.push({position, count: i, value: this.board[position]});
+      }
     }
 
     if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+      return this.positionWithCountToPosition(count);
+    }
+
+    if (checkWinSituation && this.checkWinSituation(count, moves, appConfig.height)) {
       return this.positionWithCountToPosition(count);
     }
 
@@ -313,14 +318,23 @@ export class GameBoard {
 
     // major diagonal
     count = [];
+    moves = [];
     for (let i = 0; i < appConfig.height; i++) {
       const position = this.getPositionForMove(i, appConfig.height - i - 1);
       if (this.board[position] === player) {
         count.push({position, count: i, value: this.board[position]});
       }
+
+      if (this.board[position] === player || this.board[position] === '') {
+        moves.push({position, count: i, value: this.board[position]});
+      }
     }
 
     if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+      return this.positionWithCountToPosition(count);
+    }
+
+    if (checkWinSituation && this.checkWinSituation(count, moves, appConfig.height)) {
       return this.positionWithCountToPosition(count);
     }
 
@@ -369,12 +383,13 @@ export class GameBoard {
     let multiplier = 1;
 
     if (moves.length === 2 && count.length === length) {
-      multiplier = 2;
+      multiplier = 5;
 
       if (count[0].value === '' && count[count.length - 1].value === '') {
-        multiplier = 3;
+        multiplier = 10;
       }
     }
+
     return value * multiplier;
   }
 
