@@ -11,7 +11,7 @@ $symbolsColor: #2c3e50;
   flex-direction: row;
   justify-content: space-between;
   flex-wrap: wrap;
-  margin: 60px auto;
+  margin: 40px auto;
   background: $boardBackgroundColor;
   outline: 1px $boardBorderColor solid;
 
@@ -56,11 +56,15 @@ $symbolsColor: #2c3e50;
 
 .option {
   margin-top: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+
+  &:first-child {
+    margin-bottom: 0;
+  }
 }
 
 .option__header {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   font-size: 20px;
 }
 
@@ -89,4 +93,12 @@ $symbolsColor: #2c3e50;
 
 .info__header {
   font-size: 20px;
+}
+
+.depth-slider {
+  width: 100%;
+}
+
+.start-button {
+  margin-top: 10px;
 }

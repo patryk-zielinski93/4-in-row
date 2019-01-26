@@ -11,6 +11,7 @@ import { MoveService } from './move.service';
 export class GameService {
   computer = Player.X;
   currentPlayer = Player.O;
+  depthLimit = 5;
   gameBoard$ = new BehaviorSubject<GameBoard>(new GameBoard());
   gameOver = false;
   gameOver$ = new Subject<GameOver>();
@@ -21,17 +22,17 @@ export class GameService {
   constructor(private moveService: MoveService) {
   }
 
-  move(player: Player, position: number): void {
+  move(player: Player, row: number, col: number): void {
     if (this.gameOver) {
       return;
     }
 
-    const gb = this.gameBoard.move(player, position);
+    const gb = this.gameBoard.move(player, row, col);
     this.update(gb);
 
     const isWinner = gb.checkWin(player);
     if (!!isWinner) {
-      this.gameOver$.next({winner: player, winningPositions: isWinner});
+      this.gameOver$.next({winner: player, winningPositions: []});
       return;
     }
 
@@ -41,7 +42,8 @@ export class GameService {
     }
 
     if (gb.currentPlayer === this.computer) {
-      this.move(this.computer, this.moveService.findBestMove(gb, this.computer));
+      const position = this.moveService.findBestMove(gb, this.computer, this.depthLimit);
+      this.move(this.computer, position.row, position.col);
     }
   }
 
@@ -53,7 +55,8 @@ export class GameService {
     this.update(gb);
 
     if (gb.currentPlayer === this.computer) {
-      this.move(this.computer, this.moveService.findBestMove(gb, this.computer));
+      const position = this.moveService.findBestMove(gb, this.computer, this.depthLimit);
+      this.move(this.computer, position.row, position.col);
     }
   }
 

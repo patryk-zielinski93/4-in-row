@@ -15,6 +15,9 @@ import { GameService } from './services/game.service';
 })
 export class AppComponent implements OnInit {
   currentPlayer: Player;
+  depthMax = 8;
+  depthMin = 3;
+  depthStep = 1;
   gameBoard$: Observable<GameBoard>;
   gameOver: GameOver | null;
   gameStarted = false;
@@ -36,12 +39,12 @@ export class AppComponent implements OnInit {
     return this.gameOver && this.gameOver.winner === this.gameService.human;
   }
 
-  isWinnerField(index: number): boolean {
+  isWinnerField(row: number, col: number): boolean {
     if (!this.gameOver || !this.gameOver.winner) {
       return false;
     }
 
-    return this.gameOver.winningPositions.indexOf(index) !== -1;
+    return this.gameOver.winningPositions.indexOf(`${row}${col}`) !== -1;
   }
 
   ngOnInit(): void {
@@ -52,8 +55,9 @@ export class AppComponent implements OnInit {
     this.initOptionsForm();
   }
 
-  onMove(move: number): void {
-    this.gameService.move(this.gameService.human, move);
+  onMove(row: number, col: number): void {
+    this.gameService.move(this.gameService.human, row, col);
+
   }
 
   start(): void {
@@ -61,14 +65,18 @@ export class AppComponent implements OnInit {
     this.gameService.human = options.humanSymbol;
     this.gameService.computer = options.humanSymbol === Player.X ? Player.O : Player.X;
     this.gameService.whoStarts = options.firstPlayer === 'AI' ? this.gameService.computer : this.gameService.human;
+    this.gameService.depthLimit = options.depthLimit;
     this.gameStarted = true;
+    this.optionsForm.disable();
     setTimeout(() => {
       this.gameService.start();
     }, 200);
   }
 
-  trackByIndex(index: number): number {
-    return index;
+  trackCol(rowIndex: number): (colIndex: number) => string {
+    return function (colIndex: number): string {
+      return `${rowIndex}${colIndex}`;
+    };
   }
 
   private initGameOverWatcher(): void {
@@ -83,6 +91,7 @@ export class AppComponent implements OnInit {
       }).onAction().subscribe(() => {
         this.gameOver = null;
         this.gameStarted = false;
+        this.optionsForm.enable();
       });
     });
   }
@@ -90,7 +99,8 @@ export class AppComponent implements OnInit {
   private initOptionsForm(): void {
     this.optionsForm = this.fb.group({
       firstPlayer: ['AI'],
-      humanSymbol: [Player.O]
+      humanSymbol: [Player.O],
+      depthLimit: 5
     });
   }
 }

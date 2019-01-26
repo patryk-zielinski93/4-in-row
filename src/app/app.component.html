@@ -1,6 +1,16 @@
 <form (ngSubmit)="start()"
       [formGroup]="optionsForm">
   <div class="options">
+    <div class="option">
+      <h3 class="option__header">Głębokość przeszukiwania: {{ optionsForm.get('depthLimit').value }}</h3>
+      <mat-slider class="depth-slider"
+                  formControlName="depthLimit"
+                  [max]="depthMax"
+                  [min]="depthMin"
+                  [step]="depthStep"
+                  [thumbLabel]="true">
+      </mat-slider>
+    </div>
 
     <div class="option">
       <h3 class="option__header">Który symbol wybierasz?</h3>
@@ -46,14 +56,16 @@
 
 <div class="game-board"
      [ngClass]="{'win': isWinner(), 'lose': isLooser(), 'tie': isTie()}">
-  <button class="game-field"
-          *ngFor="let move of (gameBoard$ | async)?.board; trackBy: trackByIndex; let i = index"
-          [ngClass]="{'winner-field': isWinnerField(i)}"
-          (click)="onMove(i)"
-          matRipple
-          [disabled]="!!gameOver || move !== ''">
-    {{ move }}
-  </button>
+  <ng-container *ngFor="let row of (gameBoard$ | async).board2; let rowIndex = index">
+    <button class="game-field"
+            *ngFor="let field of row; trackBy: trackCol(rowIndex); let colIndex = index"
+            [ngClass]="{'winner-field': isWinnerField(rowIndex, colIndex)}"
+            (click)="onMove(rowIndex, colIndex)"
+            matRipple
+            [disabled]="!!gameOver || field !== '' || !gameStarted">
+      {{ field }}
+    </button>
+  </ng-container>
 </div>
 <!--
 
