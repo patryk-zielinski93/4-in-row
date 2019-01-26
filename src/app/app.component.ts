@@ -62,6 +62,7 @@ export class AppComponent implements OnInit {
     this.gameService.computer = options.humanSymbol === Player.X ? Player.O : Player.X;
     this.gameService.whoStarts = options.firstPlayer === 'AI' ? this.gameService.computer : this.gameService.human;
     this.gameStarted = true;
+    this.optionsForm.disable();
     setTimeout(() => {
       this.gameService.start();
     }, 200);
@@ -83,6 +84,7 @@ export class AppComponent implements OnInit {
       }).onAction().subscribe(() => {
         this.gameOver = null;
         this.gameStarted = false;
+        this.optionsForm.enable();
       });
     });
   }

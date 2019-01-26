@@ -51,7 +51,7 @@
           [ngClass]="{'winner-field': isWinnerField(i)}"
           (click)="onMove(i)"
           matRipple
-          [disabled]="!!gameOver || move !== ''">
+          [disabled]="!!gameOver || move !== '' || !gameStarted">
     {{ move }}
   </button>
 </div>

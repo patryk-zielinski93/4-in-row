@@ -8,8 +8,6 @@ import { Player } from '../enum/player.enum';
 export class MoveService {
   private depthReached = 0;
   private gb: GameBoard;
-  private maxValuePruning = 0;
-  private minValuePruning = 0;
   private nodesExplored = 0;
   private player: Player;
   private startTime: number;
@@ -26,11 +24,11 @@ export class MoveService {
     const possibleMoves = this.gb.getPossibleGameBoards(this.player);
     let moveChoices: number[] = [];
 
-    let bestMoveValue = Number.MIN_VALUE;
-
+    let bestMoveValue = -1000;
+    console.log('-----------------------------\n');
     for (let i = 0; i < possibleMoves.length; i++) {
       const moveValue = this.minValue(possibleMoves[i], -1000, 1000, 0);
-
+      console.log(possibleMoves[i].consoleFormat(), 'color: red', 'color: black', '\nMove value: ' + moveValue);
       if (moveValue > bestMoveValue) {
         moveChoices = [];
         moveChoices.push(i);
@@ -43,13 +41,14 @@ export class MoveService {
     if (moveChoices.length === 0) {
       moveChoices = possibleMoves.map((v, i) => i);
     }
-
-    console.log(`Depth reached: ${this.depthReached}\n` +
-      `Max value pruning: ${this.maxValuePruning}\n` +
-      `Min value pruning: ${this.minValuePruning}\n` +
+    const time = (new Date()).getTime();
+    console.log(
+      `Player: ${this.player}\n` +
       `Nodes explored: ${this.nodesExplored}\n` +
+      `Time consumed: ${time - this.startTime}ms\n` +
       `Move value: ${bestMoveValue}\n` +
-      `Move choices:`, moveChoices);
+      `Move possibilities:`, moveChoices
+    );
     const n = Math.floor(Math.random() * moveChoices.length);
     return possibleMoves[moveChoices[n]].lastMove.position;
   }
@@ -66,16 +65,15 @@ export class MoveService {
     return 0;
   }
 
-  // Todo
   private evaluateGameBoard(gb: GameBoard): number {
-    const player = gb.checkNumPlays(this.player);
-    const opponent = gb.checkNumPlays(this.getOpponent());
+    const p = gb.checkNumPlays(this.player);
+    const o = gb.checkNumPlays(this.getOpponent());
 
-    return player - opponent;
+    return p - o;
   }
 
-  private getOpponent(): Player {
-    return this.player === Player.X ? Player.O : Player.X;
+  private getOpponent(player?: Player): Player {
+    return (player || this.player) === Player.X ? Player.O : Player.X;
   }
 
   private isGameOver(gb: GameBoard): boolean {
@@ -99,13 +97,12 @@ export class MoveService {
       return this.evaluateGameBoard(gb);
     }
 
-    let v = Number.MIN_VALUE;
+    let v = -1000;
 
     const possibleMoves = gb.getPossibleGameBoards(this.player);
     for (let i = 0; i < possibleMoves.length; i++) {
       v = Math.max(v, this.minValue(possibleMoves[i], a, b, currentDepth++));
       if (v >= b) {
-        this.maxValuePruning++;
         return v;
       }
       a = Math.max(a, v);
@@ -131,13 +128,12 @@ export class MoveService {
       return this.evaluateGameBoard(gb);
     }
 
-    let v = Number.MAX_VALUE;
+    let v = 1000;
     const possibleMoves = gb.getPossibleGameBoards(this.getOpponent());
 
     for (let i = 0; i < possibleMoves.length; i++) {
       v = Math.min(v, this.maxValue(possibleMoves[i], a, b, currentDepth++));
       if (v <= a) {
-        this.minValuePruning++;
         return v;
       }
       b = Math.min(b, v);

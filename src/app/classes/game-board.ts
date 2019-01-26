@@ -24,6 +24,91 @@ export class GameBoard {
     }
   }
 
+  score(): number {
+    const player = this.lastMove.player || this.currentPlayer;
+    let count: PositionWithCount[];
+    let moves: PositionWithCount[];
+    let total = 0;
+
+    // check horizontals
+    for (let i = 0; i < appConfig.height; i++) {
+      count = [];
+      moves = [];
+      for (let j = 0; j < appConfig.width; j++) {
+        const position = this.getPositionForMove(j, i);
+        if (this.board[position] === player || this.board[position] === '') {
+          count.push({position, count: j, value: this.board[position]});
+        }
+        if (this.board[position] === player) {
+          moves.push({position, count: j, value: this.board[position]});
+        }
+      }
+
+      if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+        total += this.countMoveValue(count, moves, appConfig.width);
+      }
+    }
+
+    // check verticals
+    for (let i = 0; i < appConfig.width; i++) {
+      count = [];
+      moves = [];
+      for (let j = 0; j < appConfig.height; j++) {
+        const position = this.getPositionForMove(i, j);
+        if (this.board[position] === player || this.board[position] === '') {
+          count.push({position, count: j, value: this.board[position]});
+        }
+
+        if (this.board[position] === player) {
+          moves.push({position, count: j, value: this.board[position]});
+        }
+      }
+
+      if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+        total += this.countMoveValue(count, moves, appConfig.height);
+      }
+    }
+
+    // check diagonals
+    count = [];
+    moves = [];
+
+    // major diagonal
+    for (let i = 0; i < appConfig.height; i++) {
+      const position = this.getPositionForMove(i, i);
+      if (this.board[position] === player || this.board[position] === '') {
+        count.push({position, count: i, value: this.board[position]});
+      }
+
+      if (this.board[position] === player) {
+        moves.push({position, count: i, value: this.board[position]});
+      }
+    }
+
+    if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+      total += this.countMoveValue(count, moves, appConfig.height);
+    }
+
+    // major diagonal
+    count = [];
+    moves = [];
+    for (let i = 0; i < appConfig.height; i++) {
+      const position = this.getPositionForMove(i, appConfig.width - i - 1);
+      if (this.board[position] === player || this.board[position] === '') {
+        count.push({position, count: i, value: this.board[position]});
+        if (this.board[position] === player) {
+          moves.push({position, count: i, value: this.board[position]});
+        }
+      }
+    }
+
+    if (count.length >= appConfig.wins && this.isConsecutive(count)) {
+      total += this.countMoveValue(count, moves, appConfig.width);
+    }
+
+    return total;
+  }
+
   checkNumPlays(player: Player): number {
     let count: PositionWithCount[];
     let moves: PositionWithCount[];
@@ -175,6 +260,20 @@ export class GameBoard {
     return null;
   }
 
+  consoleFormat(): string {
+    let board = `N - next move for ${this.currentPlayer === Player.O ? Player.X : Player.O}\n\n`;
+
+    for (let i = 0; i < appConfig.height * appConfig.width; i++) {
+      board += i === this.lastMove.position ? '%cN %c' : (this.board[i] || '-') + ' ';
+
+      if (!((i + 1) % 5)) {
+        board += '\n';
+      }
+    }
+
+    return board;
+  }
+
   getPossibleGameBoards(player: Player): GameBoard[] {
     const possibleGameBoards: GameBoard[] = [];
     const size = appConfig.height * appConfig.width;
@@ -198,6 +297,14 @@ export class GameBoard {
     gb.currentPlayer = this.currentPlayer === Player.X ? Player.O : Player.X;
 
     return gb;
+  }
+
+  toString(): string {
+    let s = `${this.firstPlayer}${this.currentPlayer}`;
+    this.board.forEach(v => {
+      s += v || '-';
+    });
+    return s;
   }
 
   private checkMove(position: number): boolean {
@@ -224,7 +331,7 @@ export class GameBoard {
       multiplier = 3;
     }
 
-    if (moves.length === 4 && count.length === length) {
+    if (moves.length >= 4 && count.length === length) {
       multiplier = 6;
     }
 
