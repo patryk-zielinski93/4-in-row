@@ -2,6 +2,18 @@ import { Injectable } from '@angular/core';
 import { GameBoard } from '../classes/game-board';
 import { Player } from '../enum/player.enum';
 
+export enum Flag {
+  EXACT,
+  LOWERBOUND,
+  UPPERBOUND
+}
+
+export interface TTEntry {
+  depth: number;
+  flag: Flag;
+  value: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -13,6 +25,7 @@ export class MoveService {
   private startTime: number;
   private timeCutoff = 1000;
   private timeout = false;
+  private transpositionTable = new Map<string, TTEntry>();
 
   findBestMove(gb: GameBoard, player: Player): number {
     this.gb = gb;
@@ -27,7 +40,9 @@ export class MoveService {
     let bestMoveValue = -1000;
     console.log('-----------------------------\n');
     for (let i = 0; i < possibleMoves.length; i++) {
-      const moveValue = this.minValue(possibleMoves[i], -1000, 1000, 0);
+      const moveValue = this.negamax(possibleMoves[i], 5, -1000, 1000, 1);
+      // moveValue = moveValue < 0 ? moveValue * -1 : moveValue;
+      // const moveValue = this.minValue(possibleMoves[i], -1000, 1000, 0);
       console.log(possibleMoves[i].consoleFormat(), 'color: red', 'color: black', '\nMove value: ' + moveValue);
       if (moveValue > bestMoveValue) {
         moveChoices = [];
@@ -51,6 +66,63 @@ export class MoveService {
     );
     const n = Math.floor(Math.random() * moveChoices.length);
     return possibleMoves[moveChoices[n]].lastMove.position;
+  }
+
+  negamax(node: GameBoard, depth: number, a: number, b: number, color: number): number {
+    const player = color === 1 ? this.player : this.getOpponent();
+    const alphaOrig = a;
+    const nodeKey = node.toString();
+    const ttEntry = this.transpositionTable.get(nodeKey);
+
+    if (ttEntry && ttEntry.depth >= depth) {
+      if (ttEntry.flag === Flag.EXACT) {
+        return ttEntry.value;
+      } else if (ttEntry.flag === Flag.LOWERBOUND) {
+        a = Math.max(a, ttEntry.value);
+      } else if (ttEntry.flag === Flag.UPPERBOUND) {
+        b = Math.min(b, ttEntry.value);
+      }
+
+      if (a >= b) {
+        return ttEntry.value;
+      }
+    }
+
+    if (this.isGameOver(node)) {
+      return color * this.scoreGameBoard(node, depth);
+    }
+
+    if (depth === 0) {
+      return this.evaluateGameBoard(node);
+    }
+
+    const childNodes = node.getPossibleGameBoards(player);
+    let value = -1000;
+
+    for (let i = 0; i < childNodes.length; i++) {
+      value = Math.max(value, -this.negamax(childNodes[i], depth - 1, -b, -a, -color));
+      a = Math.max(a, value);
+      if (a >= b) {
+        break;
+      }
+    }
+
+    const entry: Partial<TTEntry> = {
+      value,
+      depth
+    };
+
+    if (value <= alphaOrig) {
+      entry.flag = Flag.UPPERBOUND;
+    } else if (value >= b) {
+      entry.flag = Flag.LOWERBOUND;
+    } else {
+      entry.flag = Flag.EXACT;
+    }
+
+    this.transpositionTable.set(nodeKey, entry as TTEntry);
+
+    return value;
   }
 
   private calculateValue(gb: GameBoard, depth: number): number {
@@ -140,5 +212,17 @@ export class MoveService {
     }
 
     return v;
+  }
+
+  private scoreGameBoard(gb: GameBoard, depth): number {
+    if (!!gb.checkWin(this.player)) {
+      return 1000 - depth;
+    }
+
+    if (!!gb.checkWin(this.getOpponent())) {
+      return -1000 + depth;
+    }
+
+    return 0;
   }
 }
